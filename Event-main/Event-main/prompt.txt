@@ -1,0 +1,418 @@
+Based on your Bellcorp Event Management Application Reference Document, here's a comprehensive, production-ready prompt for Gemini or Claude to build this project: [dour-blade-da4.notion](https://dour-blade-da4.notion.site/Bellcorp-Event-Management-Application-Reference-Document-306573730b5a80ff9f57d191ed97fcae)
+
+***
+
+## **COMPREHENSIVE AI PROMPT FOR BUILDING BELLCORP EVENT MANAGEMENT APPLICATION**
+
+```
+PROJECT BRIEF:
+Build a full-stack event management platform called "Bellcorp Event Management Application" 
+with complete event discovery, user authentication, and registration management capabilities.
+
+OBJECTIVE:
+Develop a seamless "Event Discovery Experience" where users can register, discover, view, 
+and manage event registrations with efficient state management and real-time data handling.
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+TECHNICAL STACK & ARCHITECTURE:
+
+FRONTEND:
+- React.js with Functional Components and Hooks (useState, useEffect, useContext)
+- Routing: React Router for /login, /register, /events, /event/:id, /dashboard
+- State Management: Global Context API or Redux for authentication state
+- Styling: TailwindCSS or CSS Modules for responsive design
+- HTTP Client: Axios for API requests
+
+BACKEND:
+- Node.js & Express.js for REST API
+- Database: MongoDB (recommended) with Mongoose ODM
+- Authentication: JWT (JSON Web Tokens) for stateless auth
+- Security: bcryptjs for password hashing
+- Validation: Input sanitization and server-side validation
+- CORS: Enabled for cross-origin requests
+
+DEPLOYMENT:
+- Frontend: Vercel or Netlify
+- Backend: Render or Railway
+- Version Control: Git & GitHub
+- Testing: Postman/Insomnia for API validation
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+DATABASE SCHEMA:
+
+USER SCHEMA:
+- id (ObjectId)
+- name (String, required)
+- email (String, unique, required, validated)
+- password (String, hashed with bcrypt)
+- createdAt (Date)
+- updatedAt (Date)
+
+EVENT SCHEMA:
+- id (ObjectId)
+- name (String, required)
+- organizer (String, required)
+- description (String)
+- location (String, indexed for filtering)
+- date (Date, required)
+- category (String, indexed for filtering)
+- capacity (Number, required)
+- availableSeats (Number, calculated)
+- registeredUsers (Array of UserIds)
+- createdAt (Date)
+
+REGISTRATION SCHEMA:
+- id (ObjectId)
+- userId (Foreign Key to User)
+- eventId (Foreign Key to Event)
+- registrationDate (Date)
+- status (String: "confirmed" | "cancelled")
+- updatedAt (Date)
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+IMPLEMENTATION PHASES:
+
+PHASE 1: BACKEND SETUP & DATABASE MODELING
+Tasks:
+1. Initialize Node.js project with npm init -y
+2. Install dependencies: express, mongoose, dotenv, cors, jsonwebtoken, bcryptjs
+3. Setup MongoDB Atlas connection with .env configuration
+4. Create Mongoose schemas for User, Event, and Registration
+5. Establish database relationships (User <-> Registration <-> Event)
+6. Configure environment variables (DB_URI, JWT_SECRET, PORT)
+
+PHASE 2: AUTHENTICATION API
+Tasks:
+1. POST /api/auth/signup
+   - Accept: name, email, password
+   - Hash password with bcryptjs
+   - Create user in database
+   - Return JWT token
+   
+2. POST /api/auth/login
+   - Accept: email, password
+   - Verify credentials
+   - Return JWT token with user data
+   - Implement password verification
+
+3. Middleware: protect() function
+   - Verify JWT from Authorization header
+   - Extract user from token
+   - Block unauthorized requests
+   - Apply to protected routes
+
+PHASE 3: EVENT MANAGEMENT API
+Tasks:
+1. GET /api/events
+   - Fetch all events with pagination
+   - Support query parameters: search, category, location
+   - Implement Regex search for event names
+   - Filter by category and location
+   - Return available seats count
+
+2. GET /api/events/:id
+   - Fetch single event details
+   - Include registered users count
+   - Return availability status
+
+3. POST /api/events (admin only)
+   - Create new event
+   - Validate capacity > 0
+   - Set organizer from authenticated user
+
+4. GET /api/events/search
+   - Implement full-text search
+   - Support multiple filter parameters
+   - Return sorted and paginated results
+
+PHASE 4: REGISTRATION API
+Tasks:
+1. POST /api/registrations
+   - Require authentication (use protect middleware)
+   - Accept: eventId
+   - Validate: user not already registered for event
+   - Validate: available seats > 0
+   - Create registration record
+   - Update event availableSeats
+   - Return success/failure with appropriate error codes
+
+2. GET /api/registrations/user
+   - Require authentication
+   - Fetch all events registered by logged-in user
+   - Return categorized data (Upcoming vs Past)
+   - Upcoming: event.date > today
+   - Past: event.date < today
+
+3. DELETE /api/registrations/:registrationId
+   - Require authentication
+   - Allow only owner to cancel
+   - Update event availableSeats
+   - Mark as cancelled instead of hard delete
+
+PHASE 5: FRONTEND - AUTHENTICATION & CORE PAGES
+Tasks:
+1. Create Global Auth Context
+   - Store: user object, JWT token, authentication status
+   - Methods: login(), signup(), logout()
+   - Persist token in localStorage
+
+2. Build Pages:
+   - /login: Email/password form with error handling
+   - /register: Name/email/password form with validation
+   - /events: Event discovery grid with search/filter
+   - /event/:id: Single event details with register button
+   - /dashboard: User registrations in two sections (Upcoming/Past)
+
+3. Components:
+   - Navbar: Logo, search bar, auth links, user profile
+   - EventCard: Event preview with image, title, date, location
+   - EventFilter: Dropdowns for category and location
+   - SearchBar: Real-time search with debouncing
+   - RegistrationButton: Conditional rendering based on auth & availability
+
+PHASE 6: FRONTEND - EVENT DISCOVERY LOGIC
+Tasks:
+1. Implement Search Functionality
+   - Real-time search via input field
+   - Debounce API calls (300ms)
+   - Update event grid dynamically
+
+2. Implement Filters
+   - Category dropdown filter
+   - Location dropdown filter
+   - Reset filters button
+   - Maintain URL query parameters
+
+3. Error Handling
+   - Display "No events found" message
+   - Show loading skeleton during API calls
+   - Display validation error messages
+
+PHASE 7: FRONTEND - USER DASHBOARD
+Tasks:
+1. Fetch user's registrations on mount
+2. Separate events into "Upcoming" and "Past" sections
+3. Display event details for each registration
+4. Add cancel registration functionality
+5. Show confirmation modal before cancellation
+
+PHASE 8: FRONTEND - FORM VALIDATION & UX
+Tasks:
+1. Client-side validation:
+   - Email format validation
+   - Password strength requirements
+   - Required field validation
+
+2. Error Messages
+   - Display API error responses to user
+   - Show field-specific validation errors
+
+3. Loading & Success States
+   - Show loading spinners during API calls
+   - Display success toast notifications
+   - Implement loading button states
+
+PHASE 9: DEPLOYMENT & DOCUMENTATION
+Tasks:
+1. Backend Deployment (Render/Railway)
+   - Setup environment variables
+   - Configure database connection
+   - Test API endpoints
+
+2. Frontend Deployment (Vercel/Netlify)
+   - Update API base URL to live backend
+   - Configure environment variables
+   - Test all user flows
+
+3. Documentation
+   - Create comprehensive README.md
+   - Include setup instructions
+   - Document API endpoints
+   - Provide deployment steps
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+CRITICAL IMPLEMENTATION RULES:
+
+1. AUTHENTICATION:
+   - Never store passwords in plain text
+   - Always hash passwords with bcryptjs (salt rounds: 10)
+   - Use JWT for stateless authentication
+   - Set JWT expiration (recommended: 7 days)
+   - Validate JWT on every protected route
+
+2. DATA VALIDATION:
+   - Validate ALL inputs on backend (never trust frontend)
+   - Check event capacity before allowing registration
+   - Prevent duplicate registrations for same user+event
+   - Sanitize search queries to prevent injection attacks
+
+3. ERROR HANDLING:
+   - Return appropriate HTTP status codes (400, 401, 404, 500)
+   - Provide meaningful error messages
+   - Log errors for debugging
+   - Implement try-catch blocks in async functions
+
+4. PERFORMANCE:
+   - Use useEffect dependencies correctly to avoid infinite loops
+   - Implement pagination for large datasets
+   - Debounce search/filter API calls
+   - Lazy load images for event cards
+   - Cache user data after authentication
+
+5. SECURITY:
+   - Use HTTPS for all communications
+   - Validate email format
+   - Implement rate limiting on auth endpoints
+   - Secure JWT in httpOnly cookies (optional)
+   - Validate user permissions before sensitive operations
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+PROJECT STRUCTURE:
+
+```
+root/
+├── server/
+│   ├── config/
+│   │   └── db.js (MongoDB connection)
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Event.js
+│   │   └── Registration.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── eventRoutes.js
+│   │   └── registrationRoutes.js
+│   ├── middleware/
+│   │   └── auth.js (JWT protection)
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── eventController.js
+│   │   └── registrationController.js
+│   ├── .env (DB_URI, JWT_SECRET, PORT)
+│   ├── server.js (Entry point)
+│   └── package.json
+│
+├── client/
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── EventCard.jsx
+│   │   │   ├── SearchBar.jsx
+│   │   │   ├── FilterPanel.jsx
+│   │   │   └── RegistrationButton.jsx
+│   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── EventDiscovery.jsx
+│   │   │   ├── EventDetails.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   ├── hooks/
+│   │   │   └── useAuth.js
+│   │   ├── utils/
+│   │   │   └── api.js (Axios instance)
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── .env.local
+│   ├── package.json
+│   └── vite.config.js
+│
+├── .gitignore
+├── README.md
+└── LICENSE
+```
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+TESTING REQUIREMENTS:
+
+API Testing (via Postman/Insomnia):
+1. Test signup with valid/invalid data
+2. Test login with correct/incorrect credentials
+3. Test event listing with filters
+4. Test user registration with edge cases
+5. Test registration prevention (duplicate, full capacity)
+6. Test cancel registration
+
+UI Testing:
+1. Verify all routes load correctly
+2. Test search functionality with different queries
+3. Test filter dropdowns
+4. Verify authenticated routes block unauthenticated users
+5. Test responsive design on mobile/tablet
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+SEED DATA REQUIREMENT:
+
+Create a seed script that populates database with:
+- 15-20 mock events with varied categories (Tech, Sports, Music, Business)
+- Multiple locations (Delhi, Mumbai, Bangalore, Hyderabad, Pune)
+- Mix of upcoming and past events
+- Varying capacity levels (50-500)
+- 5-10 test users for demonstration
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+DELIVERABLES:
+
+1. Fully functional backend API (all endpoints tested)
+2. Complete React frontend with all pages and components
+3. Working authentication system
+4. Event search and filter functionality
+5. User registration and dashboard
+6. Deployment to live servers (Vercel + Render/Railway)
+7. 5-10 minute demo video showing:
+   - User signup/login flow
+   - Event discovery and filtering
+   - Event registration process
+   - Dashboard with categorized registrations
+   - Folder structure overview
+   - Database relationships explanation
+8. Clean, documented code with README
+
+═══════════════════════════════════════════════════════════════════════════════════════
+
+OUTPUT EXPECTATIONS:
+
+Provide:
+1. Step-by-step code implementation
+2. Complete code files (not just snippets)
+3. Explanations for architectural decisions
+4. Debugging tips and common pitfalls
+5. Performance optimization suggestions
+6. Security best practices
+7. Deployment configuration steps
+8. Testing strategies
+
+Build this as a production-ready application suitable for portfolio showcase.
+```
+
+***
+
+## **HOW TO USE THIS PROMPT**
+
+1. **With Claude**: Paste the entire prompt and ask Claude to start with Phase 1 (Backend Setup)
+2. **With Gemini**: Break into smaller chunks if token limits are reached, or paste the whole prompt
+3. **Iterative Approach**: Ask Claude/Gemini to complete one phase at a time, then move to the next phase based on completion
+
+## **KEY ADVANTAGES OF THIS PROMPT**
+
+✓ Comprehensive and detailed - covers all requirements  
+✓ Structured in phases - easy to follow  
+✓ Includes database schemas - clear data modeling  
+✓ Critical rules section - prevents common mistakes  
+✓ Security-focused - best practices included  
+✓ Testing guidelines - ensures quality  
+✓ Production-ready - suitable for real deployment  
+
+This prompt will generate complete, working code that matches your reference document perfectly.
